@@ -1,0 +1,6 @@
+{
+  "name": "Lewra Top Up - Free Fire Diamond & Game Top-Up BD",
+  "description": "Lewra Top Up is Bangladesh's trusted instant game top-up shop. Buy Free Fire diamonds, memberships, and passes with bKash, Nagad, and Rocket in 0-5 seconds using Player ID.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
