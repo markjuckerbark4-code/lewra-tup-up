@@ -1,4 +1,4 @@
-import { GameItem, FaqItem } from '../types/topup';
+import { GameItem, FaqItem, Category, StoreSettings } from '../types/topup';
 
 // Using local generated assets with fallback
 import heroBannerImg from '../assets/images/lewra_topup_hero_banner_1790497342944.jpg';
@@ -314,3 +314,26 @@ export const FAQ_ITEMS: FaqItem[] = [
     answer: 'ফ্রি ফায়ার গেম ওপেন করে উপরের বাম কোণে আপনার প্রোফাইল বা ব্যানারে ক্লিক করুন। প্রোফাইল পেইজের নামের নিচে ৮-১০ সংখ্যার একটি ইউনিক আইডি দেখতে পাবেন (যেমন: 182749281)। সেটি কপি করে আমাদের সাইটে বসিয়ে দিন।'
   }
 ];
+
+export const DEFAULT_CATEGORIES: Category[] = [
+  { id: 'offer', name: 'Top Up Offer' },
+  { id: 'freefire', name: 'Free Fire Diamond Top Up' },
+  { id: 'efootball', name: 'E-FOOTBALL' },
+  { id: 'social', name: 'SOCIAL MEDIA SERVICE' }
+];
+
+export const DEFAULT_STORE_SETTINGS: StoreSettings = {
+  storeName: 'Lewra Top Up',
+  supportPhone: '+8801828861788',
+  whatsappNumber: '8801828861788',
+  facebookLink: 'https://facebook.com',
+  telegramLink: 'https://t.me',
+  noticeText: 'আমাদের সার্ভিস চালু আছে, এখনি অর্ডার করুন, ৫ সেকেন্ডে ডায়মন্ড আইডিতে দেওয়া হয়',
+  noticeActive: true,
+  bkashNumber: '01828861788',
+  nagadNumber: '01828861788',
+  rocketNumber: '018288617887'
+};
+
+export const DEFAULT_ADMIN_PASSWORD = 'ESA@@shezan';
+

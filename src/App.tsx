@@ -4,8 +4,8 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { GAME_ITEMS } from './data/topupData';
-import { GameItem, Order } from './types/topup';
+import { GAME_ITEMS, DEFAULT_CATEGORIES, DEFAULT_STORE_SETTINGS, DEFAULT_ADMIN_PASSWORD } from './data/topupData';
+import { GameItem, Order, Category, StoreSettings } from './types/topup';
 import { NoticeBanner } from './components/NoticeBanner';
 import { Navbar } from './components/Navbar';
 import { HeroBanner } from './components/HeroBanner';
@@ -19,19 +19,54 @@ import { TopUpModal } from './components/TopUpModal';
 import { OrderTrackerModal } from './components/OrderTrackerModal';
 import { AuthModal } from './components/AuthModal';
 import { TutorialModal } from './components/TutorialModal';
-import { Search, Flame, ShieldCheck, Zap } from 'lucide-react';
+import { AdminPanel } from './components/AdminPanel';
+import { Search } from 'lucide-react';
 
 export default function App() {
   const [darkMode, setDarkMode] = useState(false);
-  const [activeTab, setActiveTab] = useState<'home' | 'marketplace'>('home');
+  const [currentView, setCurrentView] = useState<'home' | 'marketplace' | 'admin'>('home');
   const [selectedItem, setSelectedItem] = useState<GameItem | null>(null);
   const [showOrderTracker, setShowOrderTracker] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showTutorialModal, setShowTutorialModal] = useState(false);
   const [currentUser, setCurrentUser] = useState<{ name: string; phone?: string } | null>(null);
-  const [orders, setOrders] = useState<Order[]>([]);
-  const [marketplaceFilter, setMarketplaceFilter] = useState<'all' | 'freefire' | 'efootball' | 'social' | 'offer'>('all');
+  const [marketplaceFilter, setMarketplaceFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Dynamic Stores & Configs backed by LocalStorage
+  const [categories, setCategories] = useState<Category[]>(DEFAULT_CATEGORIES);
+  const [items, setItems] = useState<GameItem[]>(GAME_ITEMS);
+  const [settings, setSettings] = useState<StoreSettings>(DEFAULT_STORE_SETTINGS);
+  const [adminPassword, setAdminPassword] = useState<string>(DEFAULT_ADMIN_PASSWORD);
+  const [orders, setOrders] = useState<Order[]>([]);
+
+  // Check URL pathname for /admin or hash on initial load
+  useEffect(() => {
+    const checkAdminPath = () => {
+      const path = window.location.pathname;
+      const hash = window.location.hash;
+      if (path === '/admin' || path.startsWith('/admin/') || hash === '#admin' || hash === '#/admin') {
+        setCurrentView('admin');
+      } else if (currentView === 'admin' && path !== '/admin' && !hash.includes('admin')) {
+        setCurrentView('home');
+      }
+    };
+
+    checkAdminPath();
+    window.addEventListener('popstate', checkAdminPath);
+    return () => window.removeEventListener('popstate', checkAdminPath);
+  }, []);
+
+  // Sync route navigation
+  const navigateTo = (view: 'home' | 'marketplace' | 'admin') => {
+    setCurrentView(view);
+    if (view === 'admin') {
+      window.history.pushState(null, '', '/admin');
+    } else {
+      window.history.pushState(null, '', '/');
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   // Dark mode effect
   useEffect(() => {
@@ -42,14 +77,25 @@ export default function App() {
     }
   }, [darkMode]);
 
-  // Load initial orders from local storage
+  // Load state from local storage
   useEffect(() => {
     try {
+      const savedCats = localStorage.getItem('lewra_topup_categories');
+      if (savedCats) setCategories(JSON.parse(savedCats));
+
+      const savedItems = localStorage.getItem('lewra_topup_items');
+      if (savedItems) setItems(JSON.parse(savedItems));
+
+      const savedSettings = localStorage.getItem('lewra_topup_settings');
+      if (savedSettings) setSettings(JSON.parse(savedSettings));
+
+      const savedPass = localStorage.getItem('lewra_topup_admin_pass');
+      if (savedPass) setAdminPassword(savedPass);
+
       const savedOrders = localStorage.getItem('lewra_topup_orders');
       if (savedOrders) {
         setOrders(JSON.parse(savedOrders));
       } else {
-        // Initial sample successful order to demonstrate functionality immediately
         const initialOrder: Order = {
           id: 'LTU-892410',
           itemId: 'ff-topup-bd',
@@ -70,13 +116,37 @@ export default function App() {
       }
 
       const savedUser = localStorage.getItem('lewra_topup_user');
-      if (savedUser) {
-        setCurrentUser(JSON.parse(savedUser));
-      }
+      if (savedUser) setCurrentUser(JSON.parse(savedUser));
     } catch {
       // LocalStorage fallback
     }
   }, []);
+
+  // Update handlers
+  const handleUpdateCategories = (newCats: Category[]) => {
+    setCategories(newCats);
+    localStorage.setItem('lewra_topup_categories', JSON.stringify(newCats));
+  };
+
+  const handleUpdateItems = (newItems: GameItem[]) => {
+    setItems(newItems);
+    localStorage.setItem('lewra_topup_items', JSON.stringify(newItems));
+  };
+
+  const handleUpdateSettings = (newSettings: StoreSettings) => {
+    setSettings(newSettings);
+    localStorage.setItem('lewra_topup_settings', JSON.stringify(newSettings));
+  };
+
+  const handleUpdatePassword = (newPass: string) => {
+    setAdminPassword(newPass);
+    localStorage.setItem('lewra_topup_admin_pass', newPass);
+  };
+
+  const handleUpdateOrders = (newOrders: Order[]) => {
+    setOrders(newOrders);
+    localStorage.setItem('lewra_topup_orders', JSON.stringify(newOrders));
+  };
 
   const handleOrderSuccess = (newOrder: Order) => {
     const updated = [newOrder, ...orders];
@@ -107,20 +177,15 @@ export default function App() {
   };
 
   const scrollToPacks = () => {
-    const el = document.getElementById('free-fire-section');
+    const firstCat = categories[1] || categories[0];
+    const el = document.getElementById(`section-${firstCat?.id}`);
     if (el) {
       el.scrollIntoView({ behavior: 'smooth' });
     }
   };
 
-  // Filtered items by category for the main layout
-  const offerItems = GAME_ITEMS.filter((item) => item.category === 'offer');
-  const freeFireItems = GAME_ITEMS.filter((item) => item.category === 'freefire');
-  const efootballItems = GAME_ITEMS.filter((item) => item.category === 'efootball');
-  const socialItems = GAME_ITEMS.filter((item) => item.category === 'social');
-
   // Filtered for Marketplace tab
-  const filteredMarketplaceItems = GAME_ITEMS.filter((item) => {
+  const filteredMarketplaceItems = items.filter((item) => {
     const matchesFilter = marketplaceFilter === 'all' || item.category === marketplaceFilter;
     const matchesQuery = !searchQuery.trim() || 
       item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -128,26 +193,50 @@ export default function App() {
     return matchesFilter && matchesQuery;
   });
 
+  // If in /admin mode, render Admin Panel directly!
+  if (currentView === 'admin') {
+    return (
+      <AdminPanel
+        categories={categories}
+        items={items}
+        settings={settings}
+        orders={orders}
+        adminPasswordHash={adminPassword}
+        onUpdateCategories={handleUpdateCategories}
+        onUpdateItems={handleUpdateItems}
+        onUpdateSettings={handleUpdateSettings}
+        onUpdatePassword={handleUpdatePassword}
+        onUpdateOrders={handleUpdateOrders}
+        onExitAdmin={() => navigateTo('home')}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#f7f8f9] dark:bg-neutral-950 text-neutral-800 dark:text-neutral-200 transition-colors font-sans flex flex-col selection:bg-orange-500 selection:text-white">
-      {/* 1. Top Notice Banner */}
-      <NoticeBanner />
+      {/* 1. Top Notice Banner with dynamic text & active state */}
+      <NoticeBanner
+        text={settings.noticeText}
+        active={settings.noticeActive}
+      />
 
-      {/* 2. Top Navigation Bar */}
+      {/* 2. Top Navigation Bar with dynamic store name */}
       <Navbar
+        storeName={settings.storeName}
         darkMode={darkMode}
         onToggleDarkMode={() => setDarkMode(!darkMode)}
         onOpenAuth={() => setShowAuthModal(true)}
         onOpenTrack={() => setShowOrderTracker(true)}
-        activeTab={activeTab}
-        onSelectTab={(tab) => setActiveTab(tab as 'home' | 'marketplace')}
+        onOpenAdmin={() => navigateTo('admin')}
+        activeTab={currentView}
+        onSelectTab={(tab) => navigateTo(tab as any)}
         currentUser={currentUser}
         onLogout={handleLogout}
       />
 
       {/* Main Container */}
       <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 w-full py-4">
-        {activeTab === 'marketplace' ? (
+        {currentView === 'marketplace' ? (
           /* Marketplace View */
           <div className="my-8">
             <div className="text-center max-w-xl mx-auto mb-8">
@@ -170,25 +259,29 @@ export default function App() {
                 />
               </div>
 
-              {/* Filter Tabs */}
+              {/* Dynamic Filter Tabs from categories */}
               <div className="flex items-center justify-center flex-wrap gap-2 mt-4">
-                {[
-                  { id: 'all', label: 'সকল আইটেম' },
-                  { id: 'freefire', label: 'Free Fire' },
-                  { id: 'efootball', label: 'E-Football' },
-                  { id: 'offer', label: 'অফার' },
-                  { id: 'social', label: 'সোশ্যাল মিডিয়া' },
-                ].map((f) => (
+                <button
+                  onClick={() => setMarketplaceFilter('all')}
+                  className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                    marketplaceFilter === 'all'
+                      ? 'bg-orange-600 text-white shadow-sm'
+                      : 'bg-white dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-100'
+                  }`}
+                >
+                  সকল আইটেম
+                </button>
+                {categories.map((c) => (
                   <button
-                    key={f.id}
-                    onClick={() => setMarketplaceFilter(f.id as any)}
-                    className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all ${
-                      marketplaceFilter === f.id
+                    key={c.id}
+                    onClick={() => setMarketplaceFilter(c.id)}
+                    className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all cursor-pointer ${
+                      marketplaceFilter === c.id
                         ? 'bg-orange-600 text-white shadow-sm'
                         : 'bg-white dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700 hover:bg-neutral-100'
                     }`}
                   >
-                    {f.label}
+                    {c.name}
                   </button>
                 ))}
               </div>
@@ -216,7 +309,7 @@ export default function App() {
                   <p className="text-[11px] text-neutral-500 dark:text-neutral-400 mt-0.5">
                     {item.subtitle || '০-৫ সেকেন্ডে'}
                   </p>
-                  <button className="mt-3 w-full py-1.5 px-2 bg-orange-50 dark:bg-orange-950/40 text-orange-600 dark:text-orange-400 font-bold text-xs rounded-lg group-hover:bg-orange-600 group-hover:text-white transition-all">
+                  <button className="mt-3 w-full py-1.5 px-2 bg-orange-50 dark:bg-orange-950/40 text-orange-600 dark:text-orange-400 font-bold text-xs rounded-lg group-hover:bg-orange-600 group-hover:text-white transition-all cursor-pointer">
                     টপ-আপ করুন
                   </button>
                 </div>
@@ -224,7 +317,7 @@ export default function App() {
             </div>
           </div>
         ) : (
-          /* Home View (Matching exact user screenshot) */
+          /* Home View (Matching exact user design with dynamic items) */
           <>
             {/* 3. Hero Carousel Banner */}
             <HeroBanner
@@ -235,60 +328,60 @@ export default function App() {
             {/* 4. Three Badges / Feature Cards */}
             <FeaturesRow />
 
-            {/* 5. Top Up Offer Section */}
-            <ItemSection
-              title="Top Up Offer"
-              items={offerItems}
-              onSelect={(item) => setSelectedItem(item)}
+            {/* 5. Dynamically Render Category Sections */}
+            {categories.map((cat) => {
+              const catItems = items.filter((i) => i.category === cat.id);
+              if (catItems.length === 0) return null;
+              return (
+                <ItemSection
+                  key={cat.id}
+                  id={`section-${cat.id}`}
+                  title={cat.name}
+                  items={catItems}
+                  onSelect={(item) => setSelectedItem(item)}
+                />
+              );
+            })}
+
+            {/* 6. Dynamic Facebook & Telegram Action Buttons */}
+            <CommunityButtons
+              facebookLink={settings.facebookLink}
+              telegramLink={settings.telegramLink}
             />
 
-            {/* 6. Free Fire Diamond Top Up Section */}
-            <ItemSection
-              id="free-fire-section"
-              title="Free Fire Diamond Top Up"
-              items={freeFireItems}
-              onSelect={(item) => setSelectedItem(item)}
+            {/* 7. Content Guide / SEO Text Card */}
+            <ContentGuide
+              storeName={settings.storeName}
+              supportPhone={settings.supportPhone}
+              whatsappNumber={settings.whatsappNumber}
             />
 
-            {/* 7. E-FOOTBALL Section */}
-            <ItemSection
-              title="E-FOOTBALL"
-              items={efootballItems}
-              onSelect={(item) => setSelectedItem(item)}
-            />
-
-            {/* 8. SOCIAL MEDIA SERVICE Section */}
-            <ItemSection
-              title="SOCIAL MEDIA SERVICE"
-              items={socialItems}
-              onSelect={(item) => setSelectedItem(item)}
-            />
-
-            {/* 9. Facebook & Telegram Action Buttons */}
-            <CommunityButtons />
-
-            {/* 10. Content Guide / SEO Text Card */}
-            <ContentGuide />
-
-            {/* 11. FAQ Accordion Section */}
+            {/* 8. FAQ Accordion Section */}
             <FaqSection />
           </>
         )}
       </main>
 
-      {/* 12. Footer */}
+      {/* 9. Footer with dynamic store props and admin trigger */}
       <Footer
+        storeName={settings.storeName}
+        supportPhone={settings.supportPhone}
+        whatsappNumber={settings.whatsappNumber}
+        facebookLink={settings.facebookLink}
+        telegramLink={settings.telegramLink}
         onSelectCategory={(cat) => {
-          setActiveTab('marketplace');
-          setMarketplaceFilter(cat as any);
+          navigateTo('marketplace');
+          setMarketplaceFilter(cat);
         }}
         onOpenTrack={() => setShowOrderTracker(true)}
+        onOpenAdmin={() => navigateTo('admin')}
       />
 
       {/* Modals */}
       {selectedItem && (
         <TopUpModal
           item={selectedItem}
+          settings={settings}
           onClose={() => setSelectedItem(null)}
           onOrderSuccess={handleOrderSuccess}
         />
@@ -312,8 +405,8 @@ export default function App() {
         <TutorialModal
           onClose={() => setShowTutorialModal(false)}
           onStartTopUp={() => {
-            const firstFf = GAME_ITEMS.find((i) => i.id === 'ff-topup-bd');
-            if (firstFf) setSelectedItem(firstFf);
+            const firstItem = items[0];
+            if (firstItem) setSelectedItem(firstItem);
           }}
         />
       )}

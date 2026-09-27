@@ -1,7 +1,17 @@
 import React from 'react';
 import { Phone, MessageCircle, ShieldCheck, Zap } from 'lucide-react';
 
-export const ContentGuide: React.FC = () => {
+interface ContentGuideProps {
+  storeName?: string;
+  supportPhone?: string;
+  whatsappNumber?: string;
+}
+
+export const ContentGuide: React.FC<ContentGuideProps> = ({
+  storeName = 'Lewra Top Up',
+  supportPhone = '+8801828861788',
+  whatsappNumber = '8801828861788',
+}) => {
   return (
     <article className="my-10 max-w-5xl mx-auto px-6 py-8 sm:p-10 bg-white dark:bg-neutral-800/90 rounded-2xl border border-neutral-200 dark:border-neutral-700/80 shadow-sm text-neutral-700 dark:text-neutral-300 leading-relaxed text-sm">
       {/* Main Title */}
@@ -10,7 +20,7 @@ export const ContentGuide: React.FC = () => {
       </h3>
 
       <p className="mb-6 text-neutral-600 dark:text-neutral-300">
-        Lewra Top Up is Bangladesh's most trusted site for{' '}
+        {storeName} is Bangladesh's most trusted site for{' '}
         <span className="text-orange-600 dark:text-orange-400 font-semibold underline underline-offset-2">
           Free Fire top up
         </span>{' '}
@@ -74,26 +84,26 @@ export const ContentGuide: React.FC = () => {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 pt-2">
         <a
-          href="tel:+8801828861788"
+          href={`tel:${supportPhone}`}
           className="flex items-center gap-2.5 p-3 rounded-xl bg-neutral-50 dark:bg-neutral-700/50 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors text-xs font-semibold text-neutral-800 dark:text-neutral-200"
         >
           <Phone className="w-4 h-4 text-emerald-500" />
-          <span>Call: +8801828861788</span>
+          <span>Call: {supportPhone}</span>
         </a>
 
         <a
-          href="https://wa.me/8801828861788"
+          href={`https://wa.me/${whatsappNumber}`}
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center gap-2.5 p-3 rounded-xl bg-neutral-50 dark:bg-neutral-700/50 hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors text-xs font-semibold text-neutral-800 dark:text-neutral-200"
         >
           <MessageCircle className="w-4 h-4 text-emerald-500" />
-          <span>WhatsApp: 8801828861788</span>
+          <span>WhatsApp: {whatsappNumber}</span>
         </a>
 
         <div className="flex items-center gap-2.5 p-3 rounded-xl bg-neutral-50 dark:bg-neutral-700/50 text-xs font-semibold text-neutral-800 dark:text-neutral-200">
           <ShieldCheck className="w-4 h-4 text-blue-500" />
-          <span>Facebook: Lewra Top Up</span>
+          <span>Facebook: {storeName}</span>
         </div>
 
         <div className="flex items-center gap-2.5 p-3 rounded-xl bg-neutral-50 dark:bg-neutral-700/50 text-xs font-semibold text-neutral-800 dark:text-neutral-200">

@@ -1,12 +1,27 @@
 import React from 'react';
-import { MessageSquare, Send, Phone, ShieldCheck } from 'lucide-react';
+import { MessageSquare, Send, Phone, Lock } from 'lucide-react';
 
 interface FooterProps {
+  storeName?: string;
+  supportPhone?: string;
+  whatsappNumber?: string;
+  facebookLink?: string;
+  telegramLink?: string;
   onSelectCategory?: (cat: string) => void;
   onOpenTrack?: () => void;
+  onOpenAdmin?: () => void;
 }
 
-export const Footer: React.FC<FooterProps> = ({ onSelectCategory, onOpenTrack }) => {
+export const Footer: React.FC<FooterProps> = ({
+  storeName = 'Lewra Top Up',
+  supportPhone = '+8801828861788',
+  whatsappNumber = '8801828861788',
+  facebookLink = 'https://facebook.com',
+  telegramLink = 'https://t.me',
+  onSelectCategory,
+  onOpenTrack,
+  onOpenAdmin,
+}) => {
   return (
     <footer className="bg-neutral-950 text-neutral-300 pt-12 pb-6 border-t border-neutral-900 mt-16 font-sans">
       <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-10 pb-10 border-b border-neutral-900">
@@ -22,7 +37,9 @@ export const Footer: React.FC<FooterProps> = ({ onSelectCategory, onOpenTrack })
           <div className="flex items-center gap-3">
             {/* Facebook */}
             <a
-              href="#facebook"
+              href={facebookLink}
+              target="_blank"
+              rel="noopener noreferrer"
               aria-label="Facebook"
               className="w-9 h-9 rounded-full bg-neutral-900 hover:bg-blue-600 text-white flex items-center justify-center transition-colors"
             >
@@ -33,7 +50,9 @@ export const Footer: React.FC<FooterProps> = ({ onSelectCategory, onOpenTrack })
 
             {/* Telegram */}
             <a
-              href="#telegram"
+              href={telegramLink}
+              target="_blank"
+              rel="noopener noreferrer"
               aria-label="Telegram"
               className="w-9 h-9 rounded-full bg-neutral-900 hover:bg-sky-500 text-white flex items-center justify-center transition-colors"
             >
@@ -42,7 +61,7 @@ export const Footer: React.FC<FooterProps> = ({ onSelectCategory, onOpenTrack })
 
             {/* WhatsApp */}
             <a
-              href="https://wa.me/8801828861788"
+              href={`https://wa.me/${whatsappNumber}`}
               target="_blank"
               rel="noopener noreferrer"
               aria-label="WhatsApp"
@@ -62,7 +81,7 @@ export const Footer: React.FC<FooterProps> = ({ onSelectCategory, onOpenTrack })
             <li>
               <button
                 onClick={() => onSelectCategory && onSelectCategory('freefire')}
-                className="hover:text-white transition-colors"
+                className="hover:text-white transition-colors cursor-pointer"
               >
                 Game Top Up
               </button>
@@ -70,7 +89,7 @@ export const Footer: React.FC<FooterProps> = ({ onSelectCategory, onOpenTrack })
             <li>
               <button
                 onClick={() => onSelectCategory && onSelectCategory('all')}
-                className="hover:text-white transition-colors"
+                className="hover:text-white transition-colors cursor-pointer"
               >
                 Marketplace
               </button>
@@ -78,7 +97,7 @@ export const Footer: React.FC<FooterProps> = ({ onSelectCategory, onOpenTrack })
             <li>
               <button
                 onClick={onOpenTrack}
-                className="hover:text-white transition-colors"
+                className="hover:text-white transition-colors cursor-pointer"
               >
                 Track Order
               </button>
@@ -94,9 +113,13 @@ export const Footer: React.FC<FooterProps> = ({ onSelectCategory, onOpenTrack })
               </a>
             </li>
             <li>
-              <a href="#privacy" className="hover:text-white transition-colors">
-                Privacy Policy
-              </a>
+              <button
+                onClick={onOpenAdmin}
+                className="hover:text-orange-400 transition-colors cursor-pointer flex items-center gap-1.5"
+              >
+                <Lock className="w-3.5 h-3.5 text-neutral-500" />
+                <span>Admin Login (/admin)</span>
+              </button>
             </li>
           </ul>
         </div>
@@ -126,7 +149,7 @@ export const Footer: React.FC<FooterProps> = ({ onSelectCategory, onOpenTrack })
             <div className="flex items-center gap-3 p-2.5 rounded-xl bg-neutral-900/90 border border-neutral-850 text-xs">
               <Phone className="w-5 h-5 text-emerald-400 shrink-0" />
               <div>
-                <span className="font-bold text-white block">+8801828861788</span>
+                <span className="font-bold text-white block">{supportPhone}</span>
                 <span className="text-neutral-400">Dhaka, Bangladesh</span>
               </div>
             </div>
@@ -136,7 +159,7 @@ export const Footer: React.FC<FooterProps> = ({ onSelectCategory, onOpenTrack })
 
       {/* Bottom Bar */}
       <div className="max-w-7xl mx-auto px-6 pt-6 flex flex-col sm:flex-row items-center justify-between text-xs text-neutral-500 gap-2">
-        <p>© 2026 Lewra Top Up. All Rights Reserved.</p>
+        <p>© 2026 {storeName}. All Rights Reserved.</p>
         <div className="flex items-center gap-3 font-semibold text-neutral-400">
           <span className="hover:text-rose-400 transition-colors">bKash</span>
           <span>•</span>

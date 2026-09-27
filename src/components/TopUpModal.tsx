@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { GameItem, TopUpPackage, PaymentMethod, Order } from '../types/topup';
+import { GameItem, TopUpPackage, PaymentMethod, Order, StoreSettings } from '../types/topup';
 import { PAYMENT_METHODS } from '../data/topupData';
 import { X, Check, Copy, AlertCircle, Sparkles, Zap, ShieldCheck, CheckCircle2 } from 'lucide-react';
 
 interface TopUpModalProps {
   item: GameItem | null;
+  settings?: StoreSettings;
   onClose: () => void;
   onOrderSuccess: (order: Order) => void;
 }
 
-export const TopUpModal: React.FC<TopUpModalProps> = ({ item, onClose, onOrderSuccess }) => {
+export const TopUpModal: React.FC<TopUpModalProps> = ({ item, settings, onClose, onOrderSuccess }) => {
   if (!item) return null;
 
   const [selectedPackage, setSelectedPackage] = useState<TopUpPackage>(
@@ -37,6 +38,16 @@ export const TopUpModal: React.FC<TopUpModalProps> = ({ item, onClose, onOrderSu
 
   const activeMethodConfig = PAYMENT_METHODS.find((m) => m.id === selectedMethod) || PAYMENT_METHODS[0];
 
+  const getDynamicPaymentNumber = () => {
+    if (!settings) return activeMethodConfig.number;
+    if (selectedMethod === 'bkash') return settings.bkashNumber || activeMethodConfig.number;
+    if (selectedMethod === 'nagad') return settings.nagadNumber || activeMethodConfig.number;
+    if (selectedMethod === 'rocket') return settings.rocketNumber || activeMethodConfig.number;
+    return activeMethodConfig.number;
+  };
+
+  const currentPaymentNumber = getDynamicPaymentNumber();
+
   const handleVerifyUid = () => {
     if (!playerId.trim()) {
       setErrorMessage('অনুগ্রহ করে প্লেয়ার আইডি (UID) লিখুন');
@@ -55,7 +66,7 @@ export const TopUpModal: React.FC<TopUpModalProps> = ({ item, onClose, onOrderSu
   };
 
   const handleCopyNumber = () => {
-    navigator.clipboard.writeText(activeMethodConfig.number);
+    navigator.clipboard.writeText(currentPaymentNumber);
     setCopiedNumber(true);
     setTimeout(() => setCopiedNumber(false), 2000);
   };
@@ -343,7 +354,7 @@ export const TopUpModal: React.FC<TopUpModalProps> = ({ item, onClose, onOrderSu
                   </div>
 
                   <div className="font-mono text-base sm:text-lg font-black text-neutral-900 dark:text-white tracking-wider">
-                    {activeMethodConfig.number}
+                    {currentPaymentNumber}
                   </div>
 
                   <p className="text-neutral-600 dark:text-neutral-400 leading-normal">

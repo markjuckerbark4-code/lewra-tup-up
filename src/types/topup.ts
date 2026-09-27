@@ -8,11 +8,16 @@ export interface TopUpPackage {
   bonus?: string;
 }
 
+export interface Category {
+  id: string;
+  name: string;
+}
+
 export interface GameItem {
   id: string;
   title: string;
   subtitle?: string;
-  category: 'offer' | 'freefire' | 'efootball' | 'social';
+  category: string;
   image: string;
   badge?: string;
   packages: TopUpPackage[];
@@ -43,4 +48,17 @@ export interface Order {
 export interface FaqItem {
   question: string;
   answer: string;
+}
+
+export interface StoreSettings {
+  storeName: string;
+  supportPhone: string;
+  whatsappNumber: string;
+  facebookLink: string;
+  telegramLink: string;
+  noticeText: string;
+  noticeActive: boolean;
+  bkashNumber: string;
+  nagadNumber: string;
+  rocketNumber: string;
 }
